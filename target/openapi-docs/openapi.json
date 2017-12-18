@@ -1,0 +1,113 @@
+{
+ "swagger": "2.0",
+ "info": {
+  "version": "1.0.0",
+  "title": "m1-tiny-tweet.appspot.com"
+ },
+ "host": "m1-tiny-tweet.appspot.com",
+ "basePath": "/_ah/api",
+ "schemes": [
+  "https"
+ ],
+ "consumes": [
+  "application/json"
+ ],
+ "produces": [
+  "application/json"
+ ],
+ "paths": {
+  "/messages/v1/echo/{n}": {
+   "post": {
+    "operationId": "MessagesEchoPathParameter",
+    "parameters": [
+     {
+      "in": "body",
+      "name": "body",
+      "required": false,
+      "schema": {
+       "$ref": "#/definitions/Message"
+      }
+     },
+     {
+      "name": "n",
+      "in": "path",
+      "required": true,
+      "type": "integer",
+      "format": "int32"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A successful response",
+      "schema": {
+       "$ref": "#/definitions/Message"
+      }
+     }
+    }
+   }
+  },
+  "/messages/v1/users/{user}/messages": {
+   "get": {
+    "operationId": "MessagesGetMessages",
+    "parameters": [
+     {
+      "name": "user",
+      "in": "path",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A successful response",
+      "schema": {
+       "$ref": "#/definitions/MessageCollection"
+      }
+     }
+    }
+   }
+  }
+ },
+ "securityDefinitions": {
+  "Quentin_Mazoua": {
+   "type": "oauth2",
+   "authorizationUrl": "",
+   "flow": "implicit",
+   "x-google-issuer": "https://securetoken.google.com/m1-tiny-tweet",
+   "x-google-jwks_uri": "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+  }
+ },
+ "definitions": {
+  "MessageCollection": {
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/definitions/Message"
+     }
+    }
+   }
+  },
+  "Message": {
+   "properties": {
+    "body": {
+     "$ref": "#/definitions/Text"
+    },
+    "id": {
+     "type": "integer",
+     "format": "int64"
+    },
+    "sender": {
+     "type": "string"
+    }
+   }
+  },
+  "Text": {
+   "properties": {
+    "value": {
+     "type": "string"
+    }
+   }
+  }
+ }
+}
