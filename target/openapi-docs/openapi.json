@@ -46,6 +46,42 @@
     }
    }
   },
+  "/messages/v1/messages/add": {
+   "post": {
+    "operationId": "MessagesAddMessage",
+    "parameters": [
+     {
+      "name": "sender",
+      "in": "query",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "in": "body",
+      "name": "body",
+      "required": false,
+      "schema": {
+       "$ref": "#/definitions/Text"
+      }
+     },
+     {
+      "name": "receivers",
+      "in": "query",
+      "required": false,
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "collectionFormat": "multi"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "A successful response"
+     }
+    }
+   }
+  },
   "/messages/v1/users/{user}/messages": {
    "get": {
     "operationId": "MessagesGetMessages",

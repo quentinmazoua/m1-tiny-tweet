@@ -13,6 +13,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
@@ -45,6 +46,7 @@ import com.google.appengine.api.datastore.Text;
 
 public class MessagesAPI 
 {
+	private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 	  // [START echo_method]
 	  @ApiMethod(name = "echo_path_parameter", path = "echo/{n}")
 	  public Message echoPathParameter(Message message, @Named("n") int n) 
@@ -60,6 +62,14 @@ public class MessagesAPI
 		  return retrieveMessages(user);
 	  }
 	  // [END getMessages_method]
+	  
+	// [START getMessages_method]
+		  @ApiMethod(name = "add_message", path = "messages/add", httpMethod = ApiMethod.HttpMethod.POST)
+		  public void addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
+		  {
+			  createMessage(sender, message, receivers);
+		  }
+		  // [END getMessages_method]
 	  
 	  private Message doEcho(Message message, Integer n) 
 	  {
@@ -79,13 +89,7 @@ public class MessagesAPI
 	  }
 	  
 	  private List<Message> retrieveMessages(String user)
-	  {
-		// Authentication is automatic inside Google Compute Engine
-			// and Google App Engine.
-			  DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-			/*Key key = datastore.newKeyFactory().setKind("Task").newKey(5629499534213120L);
-			Entity entity = datastore.get(key);*/
-			  
+	  {	  
 			Filter propertyFilter = new FilterPredicate("receivers", FilterOperator.EQUAL, "me2");
 			
 			  Query query = new Query("MessageIndex").setKeysOnly().setFilter(propertyFilter);
@@ -96,7 +100,6 @@ public class MessagesAPI
 			try {
 				for(Entity e:results)
 				{	
-					// TODO Convert Entity to Message
 					messages.add(Message.entityToMessage(datastore.get(e.getParent())));
 				}
 			} catch (EntityNotFoundException e) {
@@ -105,5 +108,23 @@ public class MessagesAPI
 			}
 			
 			return messages; 	  
-		}
+	  }
+	  
+	  private void createMessage(String sender, Text body, List<String> receivers)
+	  {
+		  Message m = new Message.Builder()
+				  .sender(sender)
+				  .body(body)
+				  .build();
+		  
+		  Key parent = datastore.put(m.toEntity());
+		  
+		  MessageIndex mInd = new MessageIndex.Builder()
+				  .receivers(receivers)
+				  .parent(parent)
+				  .build();
+		  
+		  datastore.put(mInd.toEntity());
+		  
+	  }
 }

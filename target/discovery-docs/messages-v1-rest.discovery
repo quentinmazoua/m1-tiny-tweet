@@ -20,6 +20,31 @@
  "id": "messages:v1",
  "kind": "discovery#restDescription",
  "methods": {
+  "add_message": {
+   "httpMethod": "POST",
+   "id": "messages.add_message",
+   "parameters": {
+    "sender": {
+     "location": "query",
+     "required": true,
+     "type": "string"
+    },
+    "receivers": {
+     "location": "query",
+     "repeated": true,
+     "required": true,
+     "type": "string"
+    }
+   },
+   "path": "messages/add",
+   "request": {
+    "$ref": "Text",
+    "parameterName": "resource"
+   },
+   "scopes": [
+    "https://www.googleapis.com/auth/userinfo.email"
+   ]
+  },
   "echo_path_parameter": {
    "httpMethod": "POST",
    "id": "messages.echo_path_parameter",

@@ -47,13 +47,22 @@ public class Message
 	}
 	
 	public static Message entityToMessage(Entity entity)
-	  {
-		  return new Message.Builder()
-				  .sender(entity.getProperty("sender").toString())
-				  .id(new Long(entity.getKey().getId()))
-				  .body((Text)entity.getProperty("body"))
-				  .build();
-	  }
+	{
+		return new Message.Builder()
+			  .sender(entity.getProperty("sender").toString())
+			  .id(new Long(entity.getKey().getId()))
+			  .body((Text)entity.getProperty("body"))
+			  .build();
+	}
+	
+	public Entity toEntity()
+	{
+		Entity m = new Entity("Message");
+		m.setIndexedProperty("sender", this.getSender());
+		m.setProperty("body", this.getBody());
+		
+		return m;	
+	}
 	
 	// Builder pattern
 	public static class Builder
