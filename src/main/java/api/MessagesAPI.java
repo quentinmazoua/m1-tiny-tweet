@@ -3,6 +3,8 @@ package api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.api.client.googleapis.auth.clientlogin.ClientLogin.Response;
+import com.google.api.client.json.Json;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiMethod;
@@ -65,47 +67,83 @@ public class MessagesAPI
   
 	  // [START getMessages_method]
 	  @ApiMethod(name = "add_message", path = "messages/add", httpMethod = ApiMethod.HttpMethod.POST)
-	  public void addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
+	  public ResponseAPI addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
 	  {
-		  createMessage(sender, message, receivers);
+		  return createMessage(sender, message, receivers);
 	  }
 	  // [END getMessages_method]
 	  
 	  // [START addUser_method]
 	  @ApiMethod(name = "add_user", path = "users/add", httpMethod = ApiMethod.HttpMethod.POST)
-	  public void addUser(@Named("user") String name)
+	  public ResponseAPI addUser(@Named("user") String name)
 	  {
-		  createUser(name);
+		  return createUser(name);
 	  }
 	  // [END addUser_method]
 	  
 	  // [START followUser_method]
 	  @ApiMethod(name = "follow_user", path = "users/follow", httpMethod = ApiMethod.HttpMethod.POST)
-	  public void followUser(@Named("name") String name, @Named("follower")  String follower) throws EntityNotFoundException
+	  public ResponseAPI followUser(@Named("name") String name, @Named("follower")  String follower) throws EntityNotFoundException
 	  {
-		  follow_User(name,follower);
+		  return follow_User(name,follower);
 	  }
 	  // [END followUser_method]
 	  
-	  // [START getUser_method]
-	  public Key getUser(@Named("name") String name)
+	  // [START getUserKey_method]
+	  @ApiMethod(name = "get_user_key", path = "users/key", httpMethod = ApiMethod.HttpMethod.GET)
+	  public Key getUserKey(@Named("name") String name)
 	  {
-		  Filter propertyFilter = new FilterPredicate("name", FilterOperator.EQUAL, name);
-			
-			Query query = new Query("User").setFilter(propertyFilter);
-			List<Entity> results =
-			    datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());// Run the query
-			
-			Entity usr = null;
-			
-			for(Entity e:results)
-			{	
-				usr = e;
-			}
+		  try {
+			  Filter propertyFilter = new FilterPredicate("name", FilterOperator.EQUAL, name);
 				
-			return usr.getKey();
+				Query query = new Query("User").setFilter(propertyFilter);
+				List<Entity> results =
+				    datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());// Run the query
+				
+				Entity usr = null;
+				
+				for(Entity e:results)
+				{	
+					usr = e;
+				}
+					
+				return usr.getKey();
+		} catch (Exception e) {
+			return null;
+		}
+		  
 	  }
-	  // [END getUser_method]
+	  // [END getUserKey_method]
+	  
+	  // [START getUser_method]
+	  @ApiMethod(name = "get_user", path = "users/{name}", httpMethod = ApiMethod.HttpMethod.GET)
+	  public User getUser(@Named("name") String name)
+	  {
+		  try {
+			  Filter propertyFilter = new FilterPredicate("name", FilterOperator.EQUAL, name);
+				
+				Query query = new Query("User").setFilter(propertyFilter);
+				List<Entity> results =
+				    datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());// Run the query
+				
+				Entity usr = null;
+				
+				for(Entity e:results)
+				{	
+					usr = e;
+				}
+				if(usr == null) {
+					return null;
+				}
+				else {
+					return User.entityToUser(usr);
+				}
+		} catch (Exception e) {
+			return null;
+		}
+		  
+	  }
+	  // [END getUserKey_method]
 	  
 	  
 
@@ -142,14 +180,13 @@ public class MessagesAPI
 					messages.add(Message.entityToMessage(datastore.get(e.getParent())));
 				}
 			} catch (EntityNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
 			return messages; 	  
 	  }
 	  
-	  private void createMessage(String sender, Text body, List<String> receivers)
+	  private ResponseAPI createMessage(String sender, Text body, List<String> receivers)
 	  {
 		  Message m = new Message.Builder()
 				  .sender(sender)
@@ -164,22 +201,51 @@ public class MessagesAPI
 				  .build();
 		  
 		  datastore.put(mInd.toEntity());
+		  return new ResponseAPI("OK");
 		  
 	  }
 	  
-	  private void createUser(String name) {
-		User u = new User.Builder()
-				.name(name)
-				.followers(new ArrayList<String>())
-				.build();
+	  private ResponseAPI createUser(String name) {
+		  try {
+			  User test = getUser(name);
+			  if(test.equals(null)) {
+				  User u = new User.Builder()
+							.name(name)
+							.followers(new ArrayList<String>())
+							.build();
 
-		datastore.put(u.toEntity());
+					datastore.put(u.toEntity());
+					return new ResponseAPI("OK");
+			  }
+			  else {
+				  return new ResponseAPI("Already a user called " + name);
+			}
+		} catch (Exception e) {
+			User u = new User.Builder()
+					.name(name)
+					.followers(new ArrayList<String>())
+					.build();
+
+			datastore.put(u.toEntity());
+			return new ResponseAPI("OK");
+		}
 	  }
 	  
 	  
 	@SuppressWarnings("unchecked")
-	private void follow_User(String name, String follower) throws EntityNotFoundException {
-		Key usrKey = getUser(name);
+	private ResponseAPI follow_User(String name, String follower) throws EntityNotFoundException {
+		Key usrKey = getUserKey(name);
+		if (usrKey == null)
+		{
+			return new ResponseAPI("Followed does not exist");
+		}
+		
+		Key flwKey = getUserKey(follower);
+		if (flwKey == null)
+		{
+			return new ResponseAPI("Follower does not exist");
+		}
+		
 		Entity usr = datastore.get(usrKey);
 		List<String> followers;
 		try {
@@ -192,9 +258,16 @@ public class MessagesAPI
 		catch (NullPointerException ex) {
 			followers = new ArrayList<String>();
 		}
-		followers.add(follower);
-		usr.setProperty("followers",followers);
-		
-		datastore.put(usr);
+		if (!followers.contains(follower)) {
+			followers.add(follower);
+			usr.setProperty("followers",followers);
+			
+			datastore.put(usr);
+			return new ResponseAPI("OK");
+		}
+		else {
+			return new ResponseAPI("Already following");
+		}
 	  }
 }
+
