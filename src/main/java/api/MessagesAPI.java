@@ -62,16 +62,55 @@ public class MessagesAPI
 		  return retrieveMessages(user);
 	  }
 	  // [END getMessages_method]
+  
+	  // [START getMessages_method]
+	  @ApiMethod(name = "add_message", path = "messages/add", httpMethod = ApiMethod.HttpMethod.POST)
+	  public void addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
+	  {
+		  createMessage(sender, message, receivers);
+	  }
+	  // [END getMessages_method]
 	  
-	// [START getMessages_method]
-		  @ApiMethod(name = "add_message", path = "messages/add", httpMethod = ApiMethod.HttpMethod.POST)
-		  public void addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
-		  {
-			  createMessage(sender, message, receivers);
-		  }
-		  // [END getMessages_method]
+	  // [START addUser_method]
+	  @ApiMethod(name = "add_user", path = "users/add", httpMethod = ApiMethod.HttpMethod.POST)
+	  public void addUser(@Named("user") String name)
+	  {
+		  createUser(name);
+	  }
+	  // [END addUser_method]
 	  
-	  private Message doEcho(Message message, Integer n) 
+	  // [START followUser_method]
+	  @ApiMethod(name = "follow_user", path = "users/follow", httpMethod = ApiMethod.HttpMethod.POST)
+	  public void followUser(@Named("name") String name, @Named("follower")  String follower) throws EntityNotFoundException
+	  {
+		  follow_User(name,follower);
+	  }
+	  // [END followUser_method]
+	  
+	  // [START getUser_method]
+	  public Key getUser(@Named("name") String name)
+	  {
+		  Filter propertyFilter = new FilterPredicate("name", FilterOperator.EQUAL, name);
+			
+			Query query = new Query("User").setFilter(propertyFilter);
+			List<Entity> results =
+			    datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());// Run the query
+			
+			Entity usr = null;
+			
+			for(Entity e:results)
+			{	
+				usr = e;
+			}
+				
+			return usr.getKey();
+	  }
+	  // [END getUser_method]
+	  
+	  
+
+
+	private Message doEcho(Message message, Integer n) 
 	  {
 		    if (n != null && n >= 0) 
 		    {
@@ -90,7 +129,7 @@ public class MessagesAPI
 	  
 	  private List<Message> retrieveMessages(String user)
 	  {	  
-			Filter propertyFilter = new FilterPredicate("receivers", FilterOperator.EQUAL, "me2");
+			Filter propertyFilter = new FilterPredicate("receivers", FilterOperator.EQUAL, user);
 			
 			  Query query = new Query("MessageIndex").setKeysOnly().setFilter(propertyFilter);
 			  List<Entity> results =
@@ -126,5 +165,36 @@ public class MessagesAPI
 		  
 		  datastore.put(mInd.toEntity());
 		  
+	  }
+	  
+	  private void createUser(String name) {
+		User u = new User.Builder()
+				.name(name)
+				.followers(new ArrayList<String>())
+				.build();
+
+		datastore.put(u.toEntity());
+	  }
+	  
+	  
+	@SuppressWarnings("unchecked")
+	private void follow_User(String name, String follower) throws EntityNotFoundException {
+		Key usrKey = getUser(name);
+		Entity usr = datastore.get(usrKey);
+		List<String> followers;
+		try {
+			followers = (List<String>) usr.getProperty("followers");
+			if (followers == null)
+			{
+				followers = new ArrayList<String>();
+			}
+		}
+		catch (NullPointerException ex) {
+			followers = new ArrayList<String>();
+		}
+		followers.add(follower);
+		usr.setProperty("followers",followers);
+		
+		datastore.put(usr);
 	  }
 }
