@@ -3,8 +3,6 @@ package api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.api.client.googleapis.auth.clientlogin.ClientLogin.Response;
-import com.google.api.client.json.Json;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiIssuer;
 import com.google.api.server.spi.config.ApiMethod;
@@ -67,9 +65,9 @@ public class MessagesAPI
   
 	  // [START getMessages_method]
 	  @ApiMethod(name = "add_message", path = "messages/add", httpMethod = ApiMethod.HttpMethod.POST)
-	  public ResponseAPI addMessage(@Named("sender") String sender, Text message, @Named("receivers") List<String> receivers)
+	  public ResponseAPI addMessage(@Named("sender") String sender, Text message)
 	  {
-		  return createMessage(sender, message, receivers);
+		  return createMessage(sender, message);
 	  }
 	  // [END getMessages_method]
 	  
@@ -143,7 +141,7 @@ public class MessagesAPI
 		}
 		  
 	  }
-	  // [END getUserKey_method]
+	  // [END getUser_method]
 	  
 	  
 
@@ -186,8 +184,10 @@ public class MessagesAPI
 			return messages; 	  
 	  }
 	  
-	  private ResponseAPI createMessage(String sender, Text body, List<String> receivers)
+	  private ResponseAPI createMessage(String sender, Text body)
 	  {
+		  User sdr = getUser(sender);
+		  List<String> receivers = sdr.getFollowers();
 		  Message m = new Message.Builder()
 				  .sender(sender)
 				  .body(body)
