@@ -1,5 +1,5 @@
 # Projet M1 Tiny-Tweet
-# Par Quentin MAZOUA, Merlin BARZILAI et Corentin MARIONNEAU
+## Par Quentin MAZOUA, Merlin BARZILAI et Corentin MARIONNEAU
 
 ## Liens
 
