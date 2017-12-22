@@ -4,9 +4,7 @@
 
 Lien de l'API : https://apis-explorer.appspot.com/apis-explorer/?base=https://webclouddist.appspot.com/_ah/api#p/messages/v1/
 
-Lien de l'application : https://run.plnkr.co/XgM9x4csNRrgiPfb/
-
-Code de l'application : https://plnkr.co/edit/qVq2jXIetBArl1Pc81aD
+Lien de l'application : https://plnkr.co/edit/qVq2jXIetBArl1Pc81aD?p=preview
 
 ## Mesures
 
