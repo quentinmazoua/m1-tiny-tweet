@@ -20,7 +20,7 @@ Variance et moyenne pour chaque compte :
 * 500 followers : Variance = 14756 / Moyenne = 507 ms
 * 1000 followers : Variance = 57408 / Moyenne = 666 ms
 
-Evolution de la moyenne en fonction du nombre de follower :
+Evolution de la moyenne en fonction du nombre de followers :
 
 ![GraphiqueTempsEcritureMoyenne](/images/GraphiqueEcritureMoyenne.png)
 
