@@ -47,13 +47,6 @@ import com.google.appengine.api.datastore.Text;
 public class MessagesAPI 
 {
 	private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-	  // [START echo_method]
-	  @ApiMethod(name = "echo_path_parameter", path = "echo/{n}")
-	  public Message echoPathParameter(Message message, @Named("n") int n) 
-	  {
-	    return doEcho(message, n);
-	  }
-	  // [END echo_method]
 	  
 	  // [START getMessages_method]
 	  @ApiMethod(name = "get_messages", path = "users/{user}/messages")
@@ -145,23 +138,6 @@ public class MessagesAPI
 	  
 	  
 
-
-	private Message doEcho(Message message, Integer n) 
-	  {
-		    if (n != null && n >= 0) 
-		    {
-		      StringBuilder sb = new StringBuilder();
-		      for (int i = 0; i < n; i++) 
-		      {
-		        if (i > 0) {
-		          sb.append(" ");
-		        }
-		        sb.append(message.getBody());
-		      }
-		      message.setBody(new Text(sb.toString()));
-		    }
-		    return message;
-	  }
 	  
 	  private List<Message> retrieveMessages(String user)
 	  {	  
